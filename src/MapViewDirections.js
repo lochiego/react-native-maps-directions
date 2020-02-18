@@ -184,7 +184,7 @@ class MapViewDirections extends Component {
 			);
 		})).then(results => {
 			// Combine all Directions API Request results into one
-			const result = results.reduce((acc, { distance, duration, coordinates, fare, waypointOrder }) => {
+			const result = results.reduce((acc, { distance, duration, coordinates, fare, waypointOrder, legs }) => {
 				acc.coordinates = [
 					...acc.coordinates,
 					...coordinates,
@@ -199,6 +199,7 @@ class MapViewDirections extends Component {
 					...acc.waypointOrder,
 					waypointOrder,
 				];
+                acc.legs = [...acc.legs, ...legs];
 
 				return acc;
 			}, {
@@ -208,6 +209,8 @@ class MapViewDirections extends Component {
 				fares: [],
 				waypointOrder: [],
 			});
+                legs: [],
+            });
 
 			// Plot it out and call the onReady callback
 			this.setState({
@@ -271,6 +274,7 @@ class MapViewDirections extends Component {
 						),
 						fare: route.fare,
 						waypointOrder: route.waypoint_order,
+                        legs: route.legs,
 					});
 
 				} else {
