@@ -57,9 +57,23 @@ declare module "react-native-maps-directions" {
      */
     destination?: MapViewDirectionsDestination;
     /**
-     * Your Google Maps API Key
+     * Your Google Maps API Key. Required unless proxying through a different
+     * directionsServiceBaseUrl than the default, which will provide its own
+     * api key.
      */
-    apikey: string;
+    apikey?: string;
+    /**
+     * For use when directionsServiceBaseUrl is configured to use a proxy
+     * to the Google directions URI, and the apiKey is provided thereby.
+     * Without specifying this property 'apikey' is a required property.
+     */
+    proxykey?: boolean;
+    /**
+     * Headers that should be passed with the request to the 
+     * directionsServiceBaseUrl. Should be unnecessary unless proxying through
+     * a server that requires headers, e.g., 'Authorization'.
+     */
+    headers?: {[header: string]: string};
     /**
      * Callback that is called when the routing has started.
      */
