@@ -5,6 +5,7 @@ import isEqual from 'lodash.isequal';
 
 const WAYPOINT_LIMIT = 10;
 
+const GOOGLE_DIRECTIONS_SERVICE_BASE_URL = 'https://maps.googleapis.com/maps/api/directions/json';
 class MapViewDirections extends Component {
 
 	constructor(props) {
@@ -80,6 +81,8 @@ class MapViewDirections extends Component {
 			destination: initialDestination,
 			waypoints: initialWaypoints = [],
 			apikey,
+			proxykey,
+			headers,
 			onStart,
 			onReady,
 			onError,
@@ -87,15 +90,15 @@ class MapViewDirections extends Component {
 			language = 'en',
 			optimizeWaypoints,
 			splitWaypoints,
-			directionsServiceBaseUrl = 'https://maps.googleapis.com/maps/api/directions/json',
+			directionsServiceBaseUrl = GOOGLE_DIRECTIONS_SERVICE_BASE_URL,
 			region,
 			precision = 'low',
 			timePrecision = 'none',
 			channel,
 		} = props;
 
-		if (!apikey) {
-			console.warn(`MapViewDirections Error: Missing API Key`); // eslint-disable-line no-console
+		if (!apikey && !proxykey) {
+			console.warn(`MapViewDirections Error: Missing required API Key. If proxying and the proxy server adds its api key instead set the proxykey property to true`); // eslint-disable-line no-console
 			return;
 		}
 
@@ -174,7 +177,7 @@ class MapViewDirections extends Component {
 			}
 
 			return (
-				this.fetchRoute(directionsServiceBaseUrl, origin, waypoints, destination, apikey, mode, language, region, precision, timePrecisionString, channel)
+				this.fetchRoute(directionsServiceBaseUrl, origin, waypoints, destination, apikey, mode, language, region, precision, timePrecisionString, channel, headers)
 					.then(result => {
 						return result;
 					})
@@ -208,9 +211,8 @@ class MapViewDirections extends Component {
 				duration: 0,
 				fares: [],
 				waypointOrder: [],
+				legs: [],
 			});
-                legs: [],
-            });
 
 			// Plot it out and call the onReady callback
 			this.setState({
@@ -228,12 +230,14 @@ class MapViewDirections extends Component {
 			});
 	}
 
-	fetchRoute(directionsServiceBaseUrl, origin, waypoints, destination, apikey, mode, language, region, precision, timePrecision, channel) {
-
+	fetchRoute(directionsServiceBaseUrl, origin, waypoints, destination, apikey, mode, language, region, precision, timePrecision, channel, headers) {
 		// Define the URL to call. Only add default parameters to the URL if it's a string.
 		let url = directionsServiceBaseUrl;
 		if (typeof (directionsServiceBaseUrl) === 'string') {
-			url += `?origin=${origin}&waypoints=${waypoints}&destination=${destination}&key=${apikey}&mode=${mode.toLowerCase()}&language=${language}&region=${region}`;
+			url += `?origin=${origin}&waypoints=${waypoints}&destination=${destination}&mode=${mode.toLowerCase()}&language=${language}&region=${region}`;
+			if (apikey) {
+				url+=`&key=${apikey}`;
+			}
 			if(timePrecision){
 				url+=`&departure_time=${timePrecision}`;
 			}
@@ -242,7 +246,9 @@ class MapViewDirections extends Component {
 			}
 		}
 
-		return fetch(url)
+		return fetch(url, {
+			headers
+		})
 			.then(response => response.json())
 			.then(json => {
 
@@ -339,7 +345,7 @@ MapViewDirections.propTypes = {
 			longitude: PropTypes.number.isRequired,
 		}),
 	]),
-	apikey: PropTypes.string.isRequired,
+	apikey: PropTypes.string,
 	onStart: PropTypes.func,
 	onReady: PropTypes.func,
 	onError: PropTypes.func,
