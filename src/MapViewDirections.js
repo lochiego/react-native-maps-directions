@@ -211,8 +211,8 @@ class MapViewDirections extends Component {
 				duration: 0,
 				fares: [],
 				waypointOrder: [],
-                legs: [],
-            });
+				legs: [],
+			});
 
 			// Plot it out and call the onReady callback
 			this.setState({
